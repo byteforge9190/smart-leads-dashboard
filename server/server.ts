@@ -6,6 +6,8 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import cors from "cors";
 
+import authRoutes from "./routes/auth.route.js";
+
 const app = express();
 const PORT = process.env.PORT;
 
@@ -37,6 +39,8 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use("/api/auth", authRoutes);
 
 app.listen(PORT, async () => {
   try {

@@ -23,7 +23,7 @@ export interface LoginRequest {
   password: string;
 }
 export interface AuthRequest extends Request {
-  user: RegisterRequest | LoginRequest;
+  auth: RegisterRequest | LoginRequest;
 }
 
 export interface AuthPayload {
