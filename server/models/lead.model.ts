@@ -32,6 +32,7 @@ const leadSchema = new Schema<ILeadDocument>(
     notes: {
       type: String,
       trim: true,
+      default: null,
       maxlength: [500, 'Notes cannot exceed 500 characters'],
     },
     createdBy: {

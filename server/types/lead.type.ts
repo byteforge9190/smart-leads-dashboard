@@ -10,7 +10,7 @@ export interface ILead {
   email: string;
   status: LeadStatus;
   source: LeadSource;
-  notes?: string;
+  notes?: string | null;
   createdBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -21,14 +21,14 @@ export interface CreateLead {
   email: string;
   status: LeadStatus;
   source: LeadSource;
-  notes?: string;
+  notes: string | null;
 }
 export interface UpdateLead {
   name?: string;
   email?: string;
   status?: LeadStatus;
   source?: LeadSource;
-  notes?: string;
+  notes?: string | null;
 }
 export interface AvailLead {
   _id: string;
