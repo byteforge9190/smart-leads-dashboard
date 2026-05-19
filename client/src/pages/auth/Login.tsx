@@ -3,8 +3,9 @@ import { loginSchema, type LoginType } from "../../validations/auth.validate";
 import { zodResolver } from "@hookform/resolvers/zod/src/index.js";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLogin } from "../../hooks/useAuth";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const {
@@ -15,11 +16,23 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
   });
   const login = useLogin()
+  const navigate = useNavigate()
 
   const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit: SubmitHandler<LoginType> = (data) => {
-    console.log(data);
+    login.mutate(data,{
+      onSuccess: (result) => {
+        console.log(result.data)
+        toast.success(result.message)
+        localStorage.setItem('token',result.data.token)
+        navigate('/dashboard')
+      },
+      onError: (err) => {
+        console.error(err.error)
+        toast.error(err.message)
+      }
+    })
   };
 
   return (

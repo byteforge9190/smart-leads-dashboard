@@ -6,8 +6,9 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod/src/index.js";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRegister } from "../../hooks/useAuth";
+import toast from "react-hot-toast";
 
 export default function Register() {
   const {
@@ -28,12 +29,24 @@ export default function Register() {
     control,
   });
 
+  const navigate = useNavigate()
   const registration = useRegister()
 
   const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit: SubmitHandler<RegisterType> = (data) => {
-    console.log(data);
+    registration.mutate(data,{
+      onSuccess: (result) => {
+        console.log(result.data)
+        toast.success(result.message)
+        localStorage.setItem('token',result.data.token)
+        navigate('/dashboard')
+      },
+      onError: (err) => {
+        console.error(err.error)
+        toast.error(err.message)
+      }
+    })
   };
 
   return (
