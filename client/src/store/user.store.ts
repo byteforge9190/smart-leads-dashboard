@@ -27,4 +27,4 @@ export const useUser = create<UserType>((set) => ({
       return { darkMode: newMode };
     });
   },
-}))
+}));

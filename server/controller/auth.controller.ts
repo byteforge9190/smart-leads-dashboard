@@ -12,7 +12,7 @@ import { Lead } from "../models/lead.model.js";
 const signToken = (payload: AuthPayload): string => {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT secret not defined");
-  return jwt.sign(payload, secret, { expiresIn: "1d" });
+  return jwt.sign(payload, secret, { expiresIn: "7d" });
 };
 
 export const register = async (req: Request, res: Response) => {
@@ -37,13 +37,6 @@ export const register = async (req: Request, res: Response) => {
       message: "User registered successfully",
       data: {
         token,
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          createdAt: user.createdAt,
-        },
       },
     });
   } catch (error) {
@@ -79,13 +72,6 @@ export const login = async (req: Request, res: Response) => {
       message: "User logged in successfully",
       data: {
         token,
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          createdAt: user.createdAt,
-        },
       },
     });
   } catch (error) {

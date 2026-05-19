@@ -24,7 +24,7 @@ const createApiInstance = (): AxiosInstance => {
         localStorage.removeItem("token");
         window.location.href = "/login";
       }
-      return Promise.reject(error);
+      return Promise.reject(error.response?.data || error);
     },
   );
 
@@ -43,7 +43,6 @@ export const request = async (
     url: path,
     data: body ? JSON.stringify(body) : undefined,
   });
-  console.log(result);
   if (!result.data.success) throw new Error(result.data);
   return result.data;
 };

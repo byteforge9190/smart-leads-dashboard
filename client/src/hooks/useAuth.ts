@@ -3,10 +3,11 @@ import { GetMe, Login, Register } from "../service/auth";
 import type { SuccessResponse, ErrorResponse } from "../utils/response";
 import type { UseMeResponse } from "../types/user.type";
 import type { LoginType, RegisterType } from "../validations/auth.validate";
+import { queryKey } from "../utils/constants";
 
 export const useUserMe = () => {
   return useQuery<SuccessResponse<UseMeResponse>,ErrorResponse>({
-    queryKey: ["user", "me"],
+    queryKey: [queryKey.USER, "me"],
     queryFn: () => GetMe(),
   });
 };

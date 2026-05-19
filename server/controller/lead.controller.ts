@@ -7,21 +7,18 @@ import type { UserRequest } from "../types/auth.type.js";
 export const leadStatus = async (req: Request, res: Response) => {
   const { user } = req as UserRequest;
   try {
-    const leads = await Lead.find({ createdBy: user.userId });
+    const leads = await Lead.find({ createdBy: user.userId }).sort({ createdAt: -1 });
     const firstLead = leads[0];
     if (!leads.length || !firstLead)
       return res.status(status.BAD_REQUEST).json({
         ...errorResponse,
         message: "No leads found for the user",
-        data: {
-          statusCount: {},
-        },
       });
     const data = {
       first: {
         status: firstLead.status,
         source: firstLead.source,
-        _id: firstLead._id,
+        _id: firstLead._id.toString(),
         name: firstLead.name,
         email: firstLead.email,
       },

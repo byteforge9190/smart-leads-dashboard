@@ -16,7 +16,7 @@ import {
 const router = Router();
 router.use(validateUser);
 router.get("/available", leadStatus);
-router.post("/", validateCreate, createLead);
+router.post("/create", validateCreate, createLead);
 router.get("/:id", validateLeadId, getLeads);
 router.put("/:id", validateUpdate, updateLead);
 router.delete("/:id", validateLeadId, deleteLead);
