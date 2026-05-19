@@ -16,7 +16,7 @@ export const validateRegister = (
       error: error.details.map((d) => d.message).join(", "),
     });
 
-  (req as AuthRequest).auth = value;
+  (req as AuthRequest).auth = { ...value, type: "REGISTER" };
   next();
 };
 
@@ -33,6 +33,6 @@ export const validateLogin = (
       error: error.details.map((d) => d.message).join(", "),
     });
 
-  (req as AuthRequest).auth = value;
+  (req as AuthRequest).auth = {...value, type: "LOGIN"};
   next();
 };

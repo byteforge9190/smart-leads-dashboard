@@ -7,6 +7,8 @@ import helmet from "helmet";
 import cors from "cors";
 
 import authRoutes from "./routes/auth.route.js";
+import { errorResponse } from "./utils/response.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -18,12 +20,12 @@ app.use(
     credentials: true,
   }),
 );
-
+app.use(cookieParser());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   message: {
-    success: false,
+    ...errorResponse,
     message: "Too many requests, please try again later.",
   },
 });
