@@ -4,6 +4,7 @@ import {
   createLead,
   deleteLead,
   getLeads,
+  leadStatus,
   updateLead,
 } from "../controller/lead.controller.js";
 import {
@@ -14,6 +15,7 @@ import {
 
 const router = Router();
 router.use(validateUser);
+router.get("/available", leadStatus);
 router.post("/", validateCreate, createLead);
 router.get("/:id", validateLeadId, getLeads);
 router.put("/:id", validateUpdate, updateLead);

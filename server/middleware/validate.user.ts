@@ -7,35 +7,30 @@ export const validateUser = (
   req: Request,
   res: Response,
   next: NextFunction,
-): void => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      res
-        .status(status.UNAUTHORIZED)
-        .json({ ...errorResponse, message: "Unauthorized: No token provided" });
-      return;
-    }
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      res
-        .status(status.UNAUTHORIZED)
-        .json({
-          ...errorResponse,
-          message: "Unauthorized: Invalid token format",
-        });
-      return;
-    }
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return;
+) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res
+      .status(status.UNAUTHORIZED)
+      .json({ ...errorResponse, message: "Unauthorized: No token provided" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(status.UNAUTHORIZED).json({
+      ...errorResponse,
+      message: "Unauthorized: Invalid token format",
+    });
+  }
+  const secret = process.env.JWT_SECRET;
+  if (!secret) return;
 
+  try {
     const payload = jwt.verify(token, secret) as AuthPayload;
     (req as UserRequest).user = payload;
     next();
   } catch (error) {
-    res
-      .status(status.INTERNAL_SERVER_ERROR)
-      .json({ ...errorResponse, message: "Internal server error", error });
-    next(error);
+    return res
+      .status(status.FORBIDDEN)
+      .json({ ...errorResponse, message: "Forbidden: Invalid token", error });
   }
 };

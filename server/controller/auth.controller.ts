@@ -1,8 +1,13 @@
 import type { Request, Response } from "express";
-import type { AuthPayload, AuthRequest, UserRequest } from "../types/auth.type.js";
+import type {
+  AuthPayload,
+  AuthRequest,
+  UserRequest,
+} from "../types/auth.type.js";
 import { errorResponse, status, successResponse } from "../utils/response.js";
 import { User } from "../models/auth.model.js";
 import jwt from "jsonwebtoken";
+import { Lead } from "../models/lead.model.js";
 
 const signToken = (payload: AuthPayload): string => {
   const secret = process.env.JWT_SECRET;
@@ -52,7 +57,9 @@ export const login = async (req: Request, res: Response) => {
   const authReq = req as AuthRequest;
   if (authReq.auth.type !== "LOGIN") return;
   try {
-    const user = await User.findOne({ email: authReq.auth.email }).select("+password");
+    const user = await User.findOne({ email: authReq.auth.email }).select(
+      "+password",
+    );
     if (!user) {
       return res.status(status.NOT_FOUND).json({
         ...errorResponse,
@@ -98,6 +105,10 @@ export const getMe = async (req: Request, res: Response) => {
         message: "User not found",
       });
     }
+    const leads = await Lead.find(
+      { createdBy: user._id },
+    );
+
     return res.status(status.OK).json({
       ...successResponse,
       message: "User retrieved successfully",
@@ -109,6 +120,7 @@ export const getMe = async (req: Request, res: Response) => {
           role: user.role,
           createdAt: user.createdAt,
         },
+        leads: leads.length
       },
     });
   } catch (error) {
