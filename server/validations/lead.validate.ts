@@ -1,7 +1,7 @@
 import joi from "joi";
 import type { CreateLead, UpdateLead } from "../types/lead.type.js";
 
-export const validateUUID = joi.string().uuid().required();
+export const validateUUID = joi.string().regex(/^[0-9a-fA-F]{24}$/).required();
 
 export const createLeadSchema = joi.object<CreateLead>({
   name: joi.string().min(3).max(50).required(),

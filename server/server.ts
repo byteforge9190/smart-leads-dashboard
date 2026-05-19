@@ -7,6 +7,7 @@ import helmet from "helmet";
 import cors from "cors";
 
 import authRoutes from "./routes/auth.route.js";
+import leadRoutes from "./routes/lead.route.js";
 import { errorResponse } from "./utils/response.js";
 import cookieParser from "cookie-parser";
 
@@ -43,6 +44,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/leads", leadRoutes);
 
 app.listen(PORT, async () => {
   try {
