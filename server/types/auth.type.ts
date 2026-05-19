@@ -10,11 +10,26 @@ export interface IUser {
   createdAt: Date;
   updatedAt: Date;
 }
+export interface RegisterRequest {
+  type: 'REGISTER'; 
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
+export interface LoginRequest {
+  type: 'LOGIN';
+  email: string;
+  password: string;
+}
+export interface AuthRequest extends Request {
+  user: RegisterRequest | LoginRequest;
+}
 
 export interface AuthPayload {
   userId: string;
   role: UserRole;
 }
-export interface AuthRequest extends Request {
+export interface UserRequest extends Request {
   user: AuthPayload;
 }
