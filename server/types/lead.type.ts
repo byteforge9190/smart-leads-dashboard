@@ -50,3 +50,11 @@ export interface LeadIdRequest {
 export interface LeadRequest extends UserRequest {
   purpose: CreateLeadRequest | UpdateLeadRequest | LeadIdRequest
 }
+export interface LeadsQueryParams {
+  status?: LeadStatus;
+  source?: LeadSource;
+  search?: string;
+  sort?: SortOrder;
+  page?: string;
+  limit?: string;
+}

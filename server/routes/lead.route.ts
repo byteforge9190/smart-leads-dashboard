@@ -3,6 +3,7 @@ import { validateUser } from "../middleware/validate.user.js";
 import {
   createLead,
   deleteLead,
+  getAllLeads,
   getLeads,
   leadStatus,
   updateLead,
@@ -15,6 +16,7 @@ import {
 
 const router = Router();
 router.use(validateUser);
+router.get("/", getAllLeads);
 router.get("/available", leadStatus);
 router.post("/create", validateCreate, createLead);
 router.get("/:id", validateLeadId, getLeads);

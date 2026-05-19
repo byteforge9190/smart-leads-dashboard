@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import type { LeadRequest } from "../types/lead.type.js";
+import type { LeadRequest, LeadsQueryParams } from "../types/lead.type.js";
 import { Lead } from "../models/lead.model.js";
 import { errorResponse, status, successResponse } from "../utils/response.js";
 import type { UserRequest } from "../types/auth.type.js";
@@ -132,4 +132,73 @@ export const deleteLead = async (req: Request, res: Response) => {
   }
 };
 
-// Left with paginated data based on creator Id or admin
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 10;
+
+const buildLeadQuery = (query: LeadsQueryParams) => {
+  const filter: Record<string, unknown> = {};
+
+  if (query.status) filter.status = query.status;
+  if (query.source) filter.source = query.source;
+
+  if (query.search) {
+    const searchRegex = new RegExp(query.search, 'i');
+    filter.$or = [{ name: searchRegex }, { email: searchRegex }];
+  }
+
+  return filter;
+};
+
+export const getAllLeads = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const authReq = req as UserRequest;
+    const query = req.query as LeadsQueryParams;
+    const page = Math.max(1, parseInt(query.page || String(DEFAULT_PAGE), 10));
+    const limit = Math.min(50, Math.max(1, parseInt(query.limit || String(DEFAULT_LIMIT), 10)));
+    const skip = (page - 1) * limit;
+
+    const filter = buildLeadQuery(query);
+
+    if (authReq.user.role === 'SALES') {
+      filter.createdBy = authReq.user.userId;
+    }
+
+    const sortOrder = query.sort === 'oldest' ? 1 : -1;
+
+    const [leads, total] = await Promise.all([
+      Lead.find(filter)
+        .populate('createdBy', 'name email role')
+        .sort({ createdAt: sortOrder })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Lead.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      success: true,
+      message: 'Leads fetched successfully',
+      data: {
+        leads,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      },
+    });
+  } catch (error) {
+    return res
+      .status(status.INTERNAL_SERVER_ERROR)
+      .json({ ...errorResponse, message: "Internal server error", error });
+  }
+};
+
