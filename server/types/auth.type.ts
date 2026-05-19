@@ -1,3 +1,4 @@
+import type { Request } from "express";
 import { Types } from "mongoose";
 export type UserRole = "ADMIN" | "SALES";
 export interface IUser {
@@ -8,4 +9,12 @@ export interface IUser {
   role: UserRole;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface AuthPayload {
+  userId: string;
+  role: UserRole;
+}
+export interface AuthRequest extends Request {
+  user: AuthPayload;
 }
