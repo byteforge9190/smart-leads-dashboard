@@ -48,5 +48,5 @@ export interface LeadIdRequest {
   lead: AvailLead,
 }
 export interface LeadRequest extends UserRequest {
-  purpose: CreateLead | UpdateLead | LeadIdRequest
+  purpose: CreateLeadRequest | UpdateLeadRequest | LeadIdRequest
 }
