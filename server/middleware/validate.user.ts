@@ -1,10 +1,10 @@
-import type { NextFunction, Response } from "express";
+import type { NextFunction, Response, Request } from "express";
 import type { AuthPayload, UserRequest } from "../types/auth.type.js";
 import { errorResponse, status } from "../utils/response.js";
 import jwt from "jsonwebtoken";
 
 export const validateUser = (
-  req: UserRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): void => {
@@ -30,7 +30,7 @@ export const validateUser = (
     if (!secret) return;
 
     const payload = jwt.verify(token, secret) as AuthPayload;
-    req.user = payload;
+    (req as UserRequest).user = payload;
     next();
   } catch (error) {
     res

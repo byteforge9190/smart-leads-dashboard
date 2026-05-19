@@ -1,4 +1,4 @@
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import type { AuthPayload, AuthRequest, UserRequest } from "../types/auth.type.js";
 import { errorResponse, status, successResponse } from "../utils/response.js";
 import { User } from "../models/auth.model.js";
@@ -10,20 +10,21 @@ const signToken = (payload: AuthPayload): string => {
   return jwt.sign(payload, secret, { expiresIn: "1d" });
 };
 
-export const register = async (req: AuthRequest, res: Response) => {
-  if (req.user.type !== "REGISTER") return;
+export const register = async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  if (authReq.auth.type !== "REGISTER") return;
   try {
-    const existingUser = await User.findOne({ email: req.user.email });
+    const existingUser = await User.findOne({ email: authReq.auth.email });
     if (existingUser)
       return res.status(status.BAD_REQUEST).json({
         ...errorResponse,
         message: "User with this email already exists",
       });
     const user = await User.create({
-      name: req.user.name,
-      email: req.user.email,
-      password: req.user.password,
-      role: req.user.role,
+      name: authReq.auth.name,
+      email: authReq.auth.email,
+      password: authReq.auth.password,
+      role: authReq.auth.role,
     });
     const token = signToken({ userId: user._id.toString(), role: user.role });
     return res.status(status.CREATED).json({
@@ -47,17 +48,18 @@ export const register = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const login = async (req: AuthRequest, res: Response) => {
-  if (req.user.type !== "LOGIN") return;
+export const login = async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  if (authReq.auth.type !== "LOGIN") return;
   try {
-    const user = await User.findOne({ email: req.user.email }).select("+password");
+    const user = await User.findOne({ email: authReq.auth.email }).select("+password");
     if (!user) {
       return res.status(status.NOT_FOUND).json({
         ...errorResponse,
         message: "Invalid email",
       });
     }
-    const isMatch = await user.comparePassword(req.user.password);
+    const isMatch = await user.comparePassword(authReq.auth.password);
     if (!isMatch) {
       return res.status(status.FORBIDDEN).json({
         ...errorResponse,
@@ -86,9 +88,10 @@ export const login = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getMe = async (req: UserRequest, res: Response) => {
+export const getMe = async (req: Request, res: Response) => {
+  const userReq = req as UserRequest;
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(userReq.user.userId);
     if (!user) {
       return res.status(status.NOT_FOUND).json({
         ...errorResponse,
