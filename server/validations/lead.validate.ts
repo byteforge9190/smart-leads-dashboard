@@ -1,5 +1,7 @@
 import joi from "joi";
-import type { CreateLead } from "../types/lead.type.js";
+import type { CreateLead, UpdateLead } from "../types/lead.type.js";
+
+export const validateUUID = joi.string().uuid().required();
 
 export const createLeadSchema = joi.object<CreateLead>({
   name: joi.string().min(3).max(50).required(),
@@ -7,7 +9,18 @@ export const createLeadSchema = joi.object<CreateLead>({
   status: joi
     .string()
     .valid("New", "Contacted", "Qualified", "Lost")
-    .required(),
+    .default("New"),
   source: joi.string().valid("Website", "Instagram", "Referral").required(),
+  notes: joi.string().optional(),
+});
+
+export const updateLeadSchema = joi.object<UpdateLead>({
+  name: joi.string().min(3).max(50).optional(),
+  email: joi.string().email().optional(),
+  status: joi
+    .string()
+    .valid("New", "Contacted", "Qualified", "Lost")
+    .optional(),
+  source: joi.string().valid("Website", "Instagram", "Referral").optional(),
   notes: joi.string().optional(),
 });
