@@ -2,6 +2,7 @@ import type { roleType } from "./user.type";
 
 export type LeadStatus = "New" | "Contacted" | "Qualified" | "Lost";
 export type LeadSource = "Website" | "Instagram" | "Referral";
+export type SortSource = "latest" | "oldest"
 
 export interface LeadDto {
   status: LeadStatus;

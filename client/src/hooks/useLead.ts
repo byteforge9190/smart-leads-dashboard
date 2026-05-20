@@ -25,7 +25,7 @@ export const useLeadCreate = () => {
 export const useAllLeads = (isEnabled: boolean,payload:QueryLeadType ) => {
   return useInfiniteQuery<SuccessResponse<AllLeadsDto>, ErrorResponse>({
     queryKey: [queryKey.LEAD, payload],
-    queryFn: ({ pageParam }) =>
+    queryFn: ({ pageParam = 1 }) =>
       GetAllLeads({ ...payload, page: pageParam as number, limit: 10 }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
