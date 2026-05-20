@@ -6,7 +6,7 @@ import {
 } from "../../validations/leads.validate";
 import { zodResolver } from "@hookform/resolvers/zod/src/zod.js";
 import { useAllLeads } from "../../hooks/useLead";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "./Layout";
 import {
   ArrowUpDown,
@@ -22,6 +22,7 @@ import LeadForm from "./LeadForm";
 import type { LeadSource, LeadStatus, SortSource } from "../../types/lead.type";
 import LeadsTable from "./LeadsTable";
 import { LeadRowSkeleton } from "../../components/ui/Skeleton";
+import useExportLeads from "../../hooks/useExportLeads";
 
 const STATUSES: LeadStatus[] = ["New", "Contacted", "Qualified", "Lost"];
 const SOURCES: LeadSource[] = ["Website", "Instagram", "Referral"];
@@ -34,6 +35,14 @@ export default function AllLeads() {
   const watch = useWatch({
     control,
   });
+
+  const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>(watch?.search);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(watch?.search);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [watch?.search]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const {
     hasNextPage,
@@ -44,25 +53,30 @@ export default function AllLeads() {
     isLoading,
     isFetchingNextPage,
     fetchNextPage,
-  } = useAllLeads(!!availLeads, watch);
+  } = useAllLeads(!!availLeads, { ...watch, search: debouncedSearch });
 
-  const exportCSV = (filters: Partial<QueryLeadType>) => {
-    const token = localStorage.getItem("auth_token");
-    const params = new URLSearchParams();
-    if (filters.status) params.set("status", filters.status);
-    if (filters.source) params.set("source", filters.source);
-    if (filters.search) params.set("search", filters.search);
-    if (token) params.set("token", token);
-    return `${import.meta.env.VITE_BASE_URL || "http://localhost:5173"}/leads/export?${params.toString()}`;
-  };
-  const handleExport = () => {
-    const url = exportCSV(watch);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `leads-${Date.now()}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const exportQuery = useExportLeads({ ...watch, search: debouncedSearch }, false);
+
+  const handleExport = async () => {
+    try {
+      const result = await exportQuery.refetch();
+      const axiosRes = result.data;
+      if (!axiosRes) return;
+      const blob = axiosRes.data as Blob;
+      const contentDisposition = axiosRes.headers?.["content-disposition"] || "";
+      const match = /filename="?(.*)"?/.exec(contentDisposition);
+      const filename = match ? match[1] : `leads-${Date.now()}.csv`;
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export failed", err);
+    }
   };
 
   if (!availLeads) return null;

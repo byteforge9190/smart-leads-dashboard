@@ -1,5 +1,5 @@
 import type { CreateLeadType, QueryLeadType, UpdateLeadType } from "../validations/leads.validate";
-import { request } from "./starter";
+import { request, downloadBlob } from "./starter";
 
 const postJson = async (url: string, data: unknown) => {
   return request(`/leads${url}`, "POST", data);
@@ -33,3 +33,10 @@ export const UpdateLead = (payload: UpdateLeadType,id: string) => {
 export const DeleteLead = (id: string) => {
   return delJson(`/${id}`)
 }
+
+export const ExportLeads = async (payload: QueryLeadType) => {
+  const qs = `${payload.page ? `page=${payload.page}&` : ""}${payload.limit ? `limit=${payload.limit}&` : ""}${payload.status ? `status=${payload.status}&` : ""}${payload.source ? `source=${payload.source}&` : ""}${payload.search ? `search=${payload.search}&` : ""}${payload.sort ? `sort=${payload.sort}` : ""}`;
+  const path = `/leads/export?${qs}`;
+  const res = await downloadBlob(path);
+  return res;
+};
