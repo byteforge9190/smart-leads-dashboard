@@ -33,6 +33,8 @@ const createApiInstance = (): AxiosInstance => {
 
 const api = createApiInstance();
 
+export const getApiInstance = () => api;
+
 export const request = async (
   path: string,
   method: "GET" | "POST" | "PUT" | "DELETE",
@@ -45,4 +47,9 @@ export const request = async (
   });
   if (!result.data.success) throw new Error(result.data);
   return result.data;
+};
+
+export const downloadBlob = async (path: string) => {
+  const result = await api.get(path, { responseType: 'blob' });
+  return result;
 };

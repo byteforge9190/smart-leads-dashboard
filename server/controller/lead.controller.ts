@@ -202,3 +202,59 @@ export const getAllLeads = async (
   }
 };
 
+// Export matching leads as CSV. Admins get all leads; Sales users get their own leads.
+export const exportLeads = async (req: Request, res: Response) => {
+  try {
+    const authReq = req as UserRequest;
+    const query = req.query as LeadsQueryParams;
+    const filter = buildLeadQuery(query);
+
+    if (authReq.user.role === 'SALES') {
+      filter.createdBy = authReq.user.userId;
+    }
+
+    const leads = await Lead.find(filter)
+      .populate('createdBy', 'name email role')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const escape = (val: unknown) => {
+      if (val === null || val === undefined) return '';
+      const s = String(val).replace(/"/g, '""');
+      return `"${s}"`;
+    };
+
+    const header = [
+      'Name',
+      'Email',
+      'Status',
+      'Source',
+      'Notes',
+      'OwnerName',
+      'OwnerEmail',
+      'CreatedAt',
+    ];
+
+    const rows = leads.map((l) => [
+      escape(l.name),
+      escape(l.email),
+      escape(l.status),
+      escape(l.source),
+      escape(l.notes ?? ''),
+      escape((l as any).createdBy?.name ?? ''),
+      escape((l as any).createdBy?.email ?? ''),
+      escape((l as any).createdAt ? new Date((l as any).createdAt).toISOString() : ''),
+    ]);
+
+    const csv = [header.map(escape).join(','), ...rows.map((r) => r.join(','))].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="leads-${Date.now()}.csv"`);
+    res.status(200).send(csv);
+  } catch (error) {
+    return res
+      .status(status.INTERNAL_SERVER_ERROR)
+      .json({ ...errorResponse, message: 'Internal server error', error });
+  }
+};
+

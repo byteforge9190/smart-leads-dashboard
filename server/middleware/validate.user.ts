@@ -9,17 +9,20 @@ export const validateUser = (
   next: NextFunction,
 ) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  // allow token via Authorization header, query param `token`, or cookie `auth_token`
+  let token: string | undefined;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  } else if (req.query && (req.query as any).token) {
+    token = String((req.query as any).token);
+  } else if ((req as any).cookies && (req as any).cookies.auth_token) {
+    token = (req as any).cookies.auth_token;
+  }
+
+  if (!token) {
     return res
       .status(status.UNAUTHORIZED)
       .json({ ...errorResponse, message: "Unauthorized: No token provided" });
-  }
-  const token = authHeader.split(" ")[1];
-  if (!token) {
-    return res.status(status.UNAUTHORIZED).json({
-      ...errorResponse,
-      message: "Unauthorized: Invalid token format",
-    });
   }
   const secret = process.env.JWT_SECRET;
   if (!secret) return;

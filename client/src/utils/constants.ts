@@ -4,4 +4,5 @@ export const queryKey = {
     LEAD_AVAILABLE: "lead-available",
     ALL_LEADS: "all-leads",
     LEAD_DETAIL: "lead-detail",
+    EXPORT : 'export'
 }
