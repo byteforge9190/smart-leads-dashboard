@@ -91,6 +91,30 @@ There is also a health-check at `GET /health`.
 - Database connection uses Mongoose with a safe single-connection pattern in `server/config/connectDb.ts`.
 - Request validation and sanitization is applied through middleware (`server/middleware/*`).
 - The front-end uses `@tanstack/react-query` for data fetching and caching and `react-hook-form` for forms.
+ - The front-end implements debounced search on the Leads page to reduce unnecessary API calls and improve UX.
+
+### Role-Based Access Control (RBAC)
+
+- Two roles are supported: `ADMIN` and `SALES`.
+- Routes are protected and role-aware: `SALES` users can create and manage their own leads; `ADMIN` users have elevated rights (for example, deleting any lead).
+
+### Export CSV
+
+- The UI includes an Export CSV action in the Leads page. The backend exposes `GET /api/leads/export` which returns a CSV attachment of matching leads.
+- To download from the browser, the client attaches an authentication token as a query parameter (also supported via Authorization header or cookie).
+
+### Docker / docker-compose
+
+The repository includes `docker-compose.yml` and simple `Dockerfile`s for both services. Note:
+
+- Compose will build the server from `./server` and the client from `./client` and launch a `mongo` service.
+- To run the stack locally with Docker:
+
+```bash
+docker-compose up --build
+```
+
+Environment variables for production should be provided via a `.env` or your deployment tooling. The compose file uses `MONGODB_URI`, `JWT_SECRET`, and related envs.
 
 ## For Recruiters / Reviewers
 
