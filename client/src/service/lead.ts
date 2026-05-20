@@ -24,6 +24,9 @@ export const CreateLead = (payload: CreateLeadType) => {
 export const GetAllLeads = (payload: QueryLeadType) => {
   return getJson(`/?${payload.page ? `page=${payload.page}&` : ""}${payload.limit ? `limit=${payload.limit}&` : ""}${payload.status ? `status=${payload.status}&` : ""}${payload.source ? `source=${payload.source}&` : ""}${payload.search ? `search=${payload.search}&` : ""}${payload.sort ? `sort=${payload.sort}` : ""}`);
 }
+export const ViewLead = (id: string) => {
+  return getJson(`/${id}`)
+}
 export const UpdateLead = (payload: UpdateLeadType,id: string) => {
   return putJson(`/${id}`,payload)
 }

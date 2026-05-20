@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import type { ErrorResponse, SuccessResponse } from "../utils/response";
-import { CreateLead, DeleteLead, GetAllLeads, GetLeadsAvailable, UpdateLead } from "../service/lead";
-import type { AllLeadsDto, LeadAvailableDto } from "../types/lead.type";
+import { CreateLead, DeleteLead, GetAllLeads, GetLeadsAvailable, UpdateLead, ViewLead } from "../service/lead";
+import type { AllLeadsDto, LeadAvailableDto, LeadDetailsDto } from "../types/lead.type";
 import type {
   CreateLeadType,
   QueryLeadType,
@@ -36,6 +36,13 @@ export const useAllLeads = (isEnabled: boolean,payload:QueryLeadType ) => {
     enabled: isEnabled,
   });
 };
+
+export const useLeadDetails = (id: string) => {
+  return useQuery<SuccessResponse<LeadDetailsDto>,ErrorResponse>({
+    queryKey: [queryKey.LEAD, id],
+    queryFn: () => ViewLead(id)
+  })
+} 
 
 export const useUpdateLead = () => {
   return useMutation<SuccessResponse<null>, ErrorResponse, {lead: UpdateLeadType,id: string}>({
