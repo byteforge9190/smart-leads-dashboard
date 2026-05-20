@@ -8,12 +8,13 @@ import { useDeleteLead } from "../../hooks/useLead";
 import toast from "react-hot-toast";
 import { queryKey } from "../../utils/constants";
 import { useQueryClient } from "@tanstack/react-query";
+import LeadDetail from "./LeadDetails";
 
 export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
   const [editingLead, setEditingLead] = useState<LeadDetailsDto | undefined>(
     undefined,
   );
-  const [viewLead, SetViewLead] = useState<string | null>(null);
+  const [viewLead, setViewLead] = useState<string | null>(null);
   const getInitials = (name: string) =>
     name
       .split(" ")
@@ -82,7 +83,7 @@ export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
         <td className="px-6 py-4">
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => SetViewLead(data._id)}
+              onClick={() => setViewLead(data._id)}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               title="View details"
             >
@@ -106,6 +107,10 @@ export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
           </div>
         </td>
       </tr>
+
+      <Modal isOpen={!!viewLead} onClose={() => setViewLead(null)} title="Lead Details" size="lg">
+        {viewLead && <LeadDetail id={viewLead} />}
+      </Modal>
 
       <Modal
         isOpen={!!editingLead}
