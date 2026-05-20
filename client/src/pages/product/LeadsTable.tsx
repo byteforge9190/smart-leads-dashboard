@@ -2,13 +2,18 @@ import { useState } from "react";
 import { SourceBadge, StatusBadge } from "../../components/ui/Badge";
 import { Modal } from "../../components/ui/Model";
 import type { LeadDetailsDto } from "../../types/lead.type";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Eye, Trash2 } from "lucide-react";
 import LeadForm from "./LeadForm";
+import { useDeleteLead } from "../../hooks/useLead";
+import toast from "react-hot-toast";
+import { queryKey } from "../../utils/constants";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
   const [editingLead, setEditingLead] = useState<LeadDetailsDto | undefined>(
     undefined,
   );
+  const [viewLead, SetViewLead] = useState<string | null>(null);
   const getInitials = (name: string) =>
     name
       .split(" ")
@@ -22,7 +27,22 @@ export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
       month: "short",
       year: "numeric",
     });
-  const handleDelete = () => {};
+  const remove = useDeleteLead();
+  const queryClient = useQueryClient();
+  const handleDelete = () => {
+    remove.mutate(data._id, {
+      onSuccess: (result) => {
+        toast.success(result.message);
+
+        queryClient.invalidateQueries({ queryKey: [queryKey.LEAD] });
+        queryClient.invalidateQueries({ queryKey: [queryKey.USER] });
+      },
+      onError: (err) => {
+        toast.error(err.message);
+        console.error(err.error);
+      },
+    });
+  };
   return (
     <>
       <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors animate-fade-in">
@@ -62,6 +82,13 @@ export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
         <td className="px-6 py-4">
           <div className="flex items-center gap-1.5">
             <button
+              onClick={() => SetViewLead(data._id)}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              title="View details"
+            >
+              <Eye size={15} />
+            </button>
+            <button
               onClick={() => setEditingLead(data)}
               className="p-2 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/20 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
               title="Edit lead"
@@ -70,7 +97,7 @@ export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
             </button>
             <button
               onClick={handleDelete}
-              disabled={}
+              disabled={remove.isPending}
               className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
               title="Delete lead"
             >

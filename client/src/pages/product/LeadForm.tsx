@@ -9,7 +9,7 @@ import {
 } from "../../validations/leads.validate";
 import { zodResolver } from "@hookform/resolvers/zod/src/zod.js";
 import type { LeadDto, LeadSource, LeadStatus } from "../../types/lead.type";
-import { useLeadCreate } from "../../hooks/useLead";
+import { useLeadCreate, useUpdateLead } from "../../hooks/useLead";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { queryKey } from "../../utils/constants";
@@ -41,18 +41,33 @@ export default function LeadForm({
     },
   });
   const create = useLeadCreate();
-  const queryClient = useQueryClient()
+  const update = useUpdateLead();
+  const queryClient = useQueryClient();
   const onSubmit: SubmitHandler<LeadFormValues> = (data) => {
     console.log(data);
     if (lead) {
-      console.log(data);
+      update.mutate(
+        { lead: data as UpdateLeadType, id: lead._id },
+        {
+          onSuccess: (result) => {
+            toast.success(result.message);
+            onClose();
+            queryClient.invalidateQueries({ queryKey: [queryKey.LEAD] });
+            queryClient.invalidateQueries({ queryKey: [queryKey.USER] });
+          },
+          onError: (err) => {
+            toast.error(err.message);
+            console.error(err.error);
+          },
+        },
+      );
     } else
       create.mutate(data as CreateLeadType, {
         onSuccess: (result) => {
           toast.success(result.message);
-          onClose()
-          queryClient.invalidateQueries({queryKey: [queryKey.LEAD]})
-          queryClient.invalidateQueries({queryKey: [queryKey.USER]})
+          onClose();
+          queryClient.invalidateQueries({ queryKey: [queryKey.LEAD] });
+          queryClient.invalidateQueries({ queryKey: [queryKey.USER] });
         },
         onError: (err) => {
           toast.error(err.message);
@@ -180,7 +195,7 @@ export default function LeadForm({
         </label>
         <Controller
           control={control}
-          name={'notes'}
+          name={"notes"}
           render={({ field, fieldState }) => (
             <>
               <textarea
@@ -204,7 +219,7 @@ export default function LeadForm({
       <div className="flex gap-3 pt-2">
         <button
           type="button"
-          disabled={create.isPending}
+          disabled={create.isPending || update.isPending}
           onClick={() => onClose()}
           className="btn-secondary flex-1"
         >
@@ -212,10 +227,10 @@ export default function LeadForm({
         </button>
         <button
           type="submit"
-          disabled={create.isPending}
+          disabled={create.isPending || update.isPending}
           className="btn-primary flex-1 justify-center"
         >
-          {create.isPending ? (
+          {create.isPending || update.isPending ? (
             <>
               <Loader2 size={15} className="animate-spin" /> Saving...
             </>

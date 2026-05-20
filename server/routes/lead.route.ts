@@ -4,7 +4,7 @@ import {
   createLead,
   deleteLead,
   getAllLeads,
-  getLeads,
+  getLead,
   leadStatus,
   updateLead,
 } from "../controller/lead.controller.js";
@@ -19,7 +19,7 @@ router.use(validateUser);
 router.get("/", getAllLeads);
 router.get("/available", leadStatus);
 router.post("/create", validateCreate, createLead);
-router.get("/:id", validateLeadId, getLeads);
+router.get("/:id", validateLeadId, getLead);
 router.put("/:id", validateUpdate, updateLead);
 router.delete("/:id", validateLeadId, deleteLead);
 export default router;

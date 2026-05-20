@@ -33,7 +33,7 @@ export interface LeadDetailsDto {
   email: string;
   status: LeadStatus;
   source: LeadSource;
-  notes: string;
+  notes: string | null;
   createdBy: {
     id: string;
     name: string;

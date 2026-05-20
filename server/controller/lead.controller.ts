@@ -64,7 +64,7 @@ export const createLead = async (req: Request, res: Response) => {
   }
 };
 
-export const getLeads = async (req: Request, res: Response) => {
+export const getLead = async (req: Request, res: Response) => {
   const { user, purpose } = req as LeadRequest;
   if (purpose.type !== "AVAIL") return;
 
