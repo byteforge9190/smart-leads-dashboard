@@ -1,11 +1,12 @@
 import "./App.css";
 import QueryProvider from "./lib/QueryProvider";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { ProtectedRoutePath, PublicRoutePath } from "./components/RoutePath";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import { DashboardPage } from "./pages/product/Dashboard";
+import AllLeads from "./pages/product/Leads";
 
 function App() {
   return (
@@ -45,7 +46,10 @@ function App() {
           </Route>
           <Route element={<ProtectedRoutePath />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/leads" element={<AllLeads />} />
           </Route>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryProvider>
