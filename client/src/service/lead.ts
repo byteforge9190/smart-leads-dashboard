@@ -1,4 +1,4 @@
-import type { CreateLeadType } from "../validations/leads.validate";
+import type { CreateLeadType, QueryLeadType } from "../validations/leads.validate";
 import { request } from "./starter";
 
 const postJson = async (url: string, data: unknown) => {
@@ -14,4 +14,7 @@ export const GetLeadsAvailable = () => {
 
 export const CreateLead = (payload: CreateLeadType) => {
     return postJson("/create", payload);
+}
+export const GetAllLeads = (payload: QueryLeadType) => {
+  return getJson(`/?${payload.page ? `page=${payload.page}&` : ""}${payload.limit ? `limit=${payload.limit}&` : ""}${payload.status ? `status=${payload.status}&` : ""}${payload.source ? `source=${payload.source}&` : ""}${payload.search ? `search=${payload.search}&` : ""}${payload.sort ? `sort=${payload.sort}` : ""}`);
 }

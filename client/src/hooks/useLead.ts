@@ -1,20 +1,37 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
-import type { ErrorResponse, SuccessResponse } from "../utils/response"
-import { CreateLead, GetLeadsAvailable } from "../service/lead"
-import type { LeadAvailableDto } from "../types/lead.type"
-import type { CreateLeadType } from "../validations/leads.validate"
-import { queryKey } from "../utils/constants"
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import type { ErrorResponse, SuccessResponse } from "../utils/response";
+import { CreateLead, GetAllLeads, GetLeadsAvailable } from "../service/lead";
+import type { AllLeadsDto, LeadAvailableDto } from "../types/lead.type";
+import type {
+  CreateLeadType,
+  QueryLeadType,
+} from "../validations/leads.validate";
+import { queryKey } from "../utils/constants";
 
 export const useLeadAvailable = (isEnabled: boolean) => {
-    return useQuery<SuccessResponse<LeadAvailableDto>, ErrorResponse>({
-        queryKey: [queryKey.LEAD, queryKey.LEAD_AVAILABLE],
-        queryFn: () => GetLeadsAvailable(),
-        enabled: isEnabled
-    })
-}
+  return useQuery<SuccessResponse<LeadAvailableDto>, ErrorResponse>({
+    queryKey: [queryKey.LEAD, queryKey.LEAD_AVAILABLE],
+    queryFn: () => GetLeadsAvailable(),
+    enabled: isEnabled,
+  });
+};
 
 export const useLeadCreate = () => {
-    return useMutation<SuccessResponse<null>,ErrorResponse,CreateLeadType>({
-        mutationFn: (payload) => CreateLead(payload),
-    })
-}
+  return useMutation<SuccessResponse<null>, ErrorResponse, CreateLeadType>({
+    mutationFn: (payload) => CreateLead(payload),
+  });
+};
+
+export const useAllLeads = (isEnabled: boolean,payload:QueryLeadType ) => {
+  return useInfiniteQuery<SuccessResponse<AllLeadsDto>, ErrorResponse>({
+    queryKey: [queryKey.LEAD, payload],
+    queryFn: ({ pageParam }) =>
+      GetAllLeads({ ...payload, page: pageParam as number, limit: 10 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.data.pagination.hasNextPage) return undefined;
+      return lastPage.data.pagination.page + 1;
+    },
+    enabled: isEnabled,
+  });
+};
