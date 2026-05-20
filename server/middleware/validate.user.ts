@@ -1,5 +1,5 @@
 import type { NextFunction, Response, Request } from "express";
-import type { AuthPayload, UserRequest } from "../types/auth.type.js";
+import type { AuthPayload, UserRequest, UserRole } from "../types/auth.type.js";
 import { errorResponse, status } from "../utils/response.js";
 import jwt from "jsonwebtoken";
 
@@ -33,4 +33,24 @@ export const validateUser = (
       .status(status.FORBIDDEN)
       .json({ ...errorResponse, message: "Forbidden: Invalid token", error });
   }
+};
+
+export const validateRole = (...roles: UserRole[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const authReq = req as UserRequest
+    if (!authReq.user) {
+      res.status(401).json({ success: false, message: 'Not authenticated.' });
+      return;
+    }
+
+    if (!roles.includes(authReq.user.role)) {
+      res.status(403).json({
+        success: false,
+        message: 'Access denied. Insufficient permissions.',
+      });
+      return;
+    }
+
+    next();
+  };
 };

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateUser } from "../middleware/validate.user.js";
+import { validateUser, validateRole } from "../middleware/validate.user.js";
 import {
   createLead,
   deleteLead,
