@@ -10,8 +10,8 @@ import { useState } from "react";
 import { Layout } from "./Layout";
 import {
   ArrowUpDown,
+  Download,
   Filter,
-  Loader2,
   Plus,
   Search,
   Users,
@@ -45,6 +45,25 @@ export default function AllLeads() {
     isFetchingNextPage,
     fetchNextPage,
   } = useAllLeads(!!availLeads, watch);
+
+  const exportCSV = (filters: Partial<QueryLeadType>) => {
+    const token = localStorage.getItem("auth_token");
+    const params = new URLSearchParams();
+    if (filters.status) params.set("status", filters.status);
+    if (filters.source) params.set("source", filters.source);
+    if (filters.search) params.set("search", filters.search);
+    if (token) params.set("token", token);
+    return `${import.meta.env.VITE_BASE_URL || "http://localhost:5173"}/leads/export?${params.toString()}`;
+  };
+  const handleExport = () => {
+    const url = exportCSV(watch);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   if (!availLeads) return null;
 
@@ -204,6 +223,13 @@ export default function AllLeads() {
                 </button>
               )}
             </div>
+            <button
+              onClick={handleExport}
+              className="btn-secondary text-xs py-1.5 px-3"
+            >
+              <Download size={13} />
+              Export CSV
+            </button>
           </div>
         </div>
 
@@ -282,7 +308,6 @@ export default function AllLeads() {
             </>
           )}
         </div>
-
       </div>
 
       {/* Create modal */}
