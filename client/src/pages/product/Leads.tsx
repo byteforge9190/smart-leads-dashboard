@@ -36,7 +36,9 @@ export default function AllLeads() {
     control,
   });
 
-  const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>(watch?.search);
+  const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>(
+    watch?.search,
+  );
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedSearch(watch?.search);
@@ -55,7 +57,10 @@ export default function AllLeads() {
     fetchNextPage,
   } = useAllLeads(!!availLeads, { ...watch, search: debouncedSearch });
 
-  const exportQuery = useExportLeads({ ...watch, search: debouncedSearch }, false);
+  const exportQuery = useExportLeads(
+    { ...watch, search: debouncedSearch },
+    false,
+  );
 
   const handleExport = async () => {
     try {
@@ -63,7 +68,8 @@ export default function AllLeads() {
       const axiosRes = result.data;
       if (!axiosRes) return;
       const blob = axiosRes.data as Blob;
-      const contentDisposition = axiosRes.headers?.["content-disposition"] || "";
+      const contentDisposition =
+        axiosRes.headers?.["content-disposition"] || "";
       const match = /filename="?(.*)"?/.exec(contentDisposition);
       const filename = match ? match[1] : `leads-${Date.now()}.csv`;
       const url = window.URL.createObjectURL(blob);
@@ -79,8 +85,6 @@ export default function AllLeads() {
     }
   };
 
-  if (!availLeads) return null;
-
   return (
     <Layout>
       <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
@@ -88,10 +92,18 @@ export default function AllLeads() {
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <Users size={18} className="text-slate-400" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {availLeads ? `${availLeads} total leads` : "Loading..."}
-              </p>
+              {!availLeads ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {`No available leads`}
+                </p>
+              ) : (
+                <>
+                  <Users size={18} className="text-slate-400" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {`${availLeads} total leads`}
+                  </p>
+                </>
+              )}
             </div>
             <h1 className="text-2xl font-bold font-display text-slate-800 dark:text-slate-100">
               Leads
@@ -248,80 +260,82 @@ export default function AllLeads() {
         </div>
 
         {/* Table */}
-        <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800">
-                  <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Lead
-                  </th>
-                  <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Source
-                  </th>
-                  <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                {/* Skeleton while first page loads */}
-                {isLoading &&
-                  Array.from({ length: availLeads }).map((_, i) => (
-                    <LeadRowSkeleton key={i} />
-                  ))}
+        {!!availLeads && (
+          <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800">
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Lead
+                    </th>
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Source
+                    </th>
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                  {/* Skeleton while first page loads */}
+                  {isLoading &&
+                    Array.from({ length: availLeads }).map((_, i) => (
+                      <LeadRowSkeleton key={i} />
+                    ))}
 
-                {/* Actual rows */}
-                {isSuccess &&
-                  data.pages.flatMap((p) =>
-                    p.data.leads.map((l) => (
-                      <LeadsTable key={l._id} data={l} />
-                    )),
+                  {/* Actual rows */}
+                  {isSuccess &&
+                    data.pages.flatMap((p) =>
+                      p.data.leads.map((l) => (
+                        <LeadsTable key={l._id} data={l} />
+                      )),
+                    )}
+
+                  {/* Empty state as a row */}
+                  {isSuccess && data.pages[0].data.leads.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-20 text-center">
+                        <p className="text-slate-400 text-sm">
+                          No leads found. Try adjusting your filters.
+                        </p>
+                      </td>
+                    </tr>
                   )}
+                  {isError && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-20 text-center">
+                        <p className="text-slate-400 text-sm">
+                          Error : {error.message}
+                        </p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-                {/* Empty state as a row */}
-                {isSuccess && data.pages[0].data.leads.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-20 text-center">
-                      <p className="text-slate-400 text-sm">
-                        No leads found. Try adjusting your filters.
-                      </p>
-                    </td>
-                  </tr>
-                )}
-                {isError && (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-20 text-center">
-                      <p className="text-slate-400 text-sm">
-                        Error : {error.message}
-                      </p>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            {/* Sentinel for infinite scroll */}
+            <div className="h-4" />
+            {hasNextPage && (
+              <>
+                <button
+                  className="flex justify-center py-4"
+                  disabled={isFetchingNextPage}
+                  onClick={() => fetchNextPage()}
+                >
+                  {isFetchingNextPage ? "Loading" : "Load More"}
+                </button>
+              </>
+            )}
           </div>
-
-          {/* Sentinel for infinite scroll */}
-          <div className="h-4" />
-          {hasNextPage && (
-            <>
-              <button
-                className="flex justify-center py-4"
-                disabled={isFetchingNextPage}
-                onClick={() => fetchNextPage()}
-              >
-                {isFetchingNextPage ? "Loading" : "Load More"}
-              </button>
-            </>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Create modal */}
