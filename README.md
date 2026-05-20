@@ -72,19 +72,148 @@ Create a `.env` file in `server/` (a sample `.env` is included). Required keys:
 Base path: `/api`
 
 - Auth
-	- `POST /api/auth/register` — Register a new user
-	- `POST /api/auth/login` — Authenticate and receive JWT cookie
-	- `GET /api/auth/me` — Get current authenticated user (requires auth)
+  - `POST /api/auth/register` — Register a new user
+  - `POST /api/auth/login` — Authenticate and receive JWT token
+  - `GET /api/auth/me` — Get current authenticated user (requires auth)
 
 - Leads (requires authentication)
-	- `GET /api/leads` — List all leads
-	- `GET /api/leads/available` — Get leads by availability/status
-	- `POST /api/leads/create` — Create a new lead
-	- `GET /api/leads/:id` — Get lead details
-	- `PUT /api/leads/:id` — Update a lead
-	- `DELETE /api/leads/:id` — Remove a lead
+  - `GET /api/leads` — List leads with filters, pagination, and role-aware access
+  - `GET /api/leads/available` — Get dashboard lead status data
+  - `GET /api/leads/export` — Export filtered leads as CSV
+  - `POST /api/leads/create` — Create a new lead
+  - `GET /api/leads/:id` — Get lead details
+  - `PUT /api/leads/:id` — Update a lead
+  - `DELETE /api/leads/:id` — Delete a lead
 
 There is also a health-check at `GET /health`.
+
+## API Documentation
+
+### Authentication
+
+#### `POST /api/auth/register`
+
+Request body:
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "StrongPassword123",
+  "role": "SALES"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "User registered successfully",
+  "data": {
+    "token": "<jwt-token>",
+    "user": {
+      "_id": "...",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "role": "SALES"
+    }
+  },
+  "timestamp": "..."
+}
+```
+
+#### `POST /api/auth/login`
+
+Request body:
+
+```json
+{
+  "email": "john@example.com",
+  "password": "StrongPassword123"
+}
+```
+
+Response: returns the JWT token and user details.
+
+#### `GET /api/auth/me`
+
+Headers:
+
+```http
+Authorization: Bearer <jwt-token>
+```
+
+Response: returns the authenticated user profile.
+
+### Leads
+
+All lead endpoints require authentication. Use the same `Authorization: Bearer <jwt-token>` header for every request.
+
+#### `GET /api/leads`
+
+Query parameters:
+
+- `status` — filter by lead status (`New`, `Contacted`, `Qualified`, `Lost`)
+- `source` — filter by lead source (`Website`, `Instagram`, `Referral`)
+- `search` — search by name or email
+- `sort` — `latest` or `oldest`
+- `page` — page number for pagination
+- `limit` — page size
+
+Role behavior:
+
+- `ADMIN` users receive all leads.
+- `SALES` users receive only leads they created.
+
+#### `GET /api/leads/available`
+
+Returns dashboard data for lead status counts, source counts, and a recent lead summary.
+
+#### `GET /api/leads/export`
+
+Exports the same filtered leads as the list endpoint as a CSV download.
+
+Query parameters are the same as `GET /api/leads`.
+
+Response headers:
+
+- `Content-Type: text/csv`
+- `Content-Disposition: attachment; filename="leads-<timestamp>.csv"`
+
+#### `POST /api/leads/create`
+
+Request body:
+
+```json
+{
+  "name": "Jane Smith",
+  "email": "jane@example.com",
+  "status": "New",
+  "source": "Website",
+  "notes": "Initial contact made"
+}
+```
+
+`SALES` and `ADMIN` roles can create leads.
+
+#### `GET /api/leads/:id`
+
+Returns lead details. `ADMIN` can access any lead; `SALES` can access only their own leads.
+
+#### `PUT /api/leads/:id`
+
+Request body: same fields as create. `ADMIN` can update any lead; `SALES` can update their own leads.
+
+#### `DELETE /api/leads/:id`
+
+`ADMIN` users can delete any lead. `SALES` delete ability is restricted by role.
+
+### Health check
+
+#### `GET /health`
+
+Returns a simple status response for uptime checks.
 
 ## Notable Implementation Details
 
