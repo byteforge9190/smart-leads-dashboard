@@ -9,11 +9,13 @@ import toast from "react-hot-toast";
 import { queryKey } from "../../utils/constants";
 import { useQueryClient } from "@tanstack/react-query";
 import LeadDetail from "./LeadDetails";
+import { useUser } from "../../store/user.store";
 
 export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
   const [editingLead, setEditingLead] = useState<LeadDetailsDto | undefined>(
     undefined,
   );
+  const role = useUser((state) => state.role);
   const [viewLead, setViewLead] = useState<string | null>(null);
   const getInitials = (name: string) =>
     name
@@ -98,9 +100,9 @@ export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
             </button>
             <button
               onClick={handleDelete}
-              disabled={remove.isPending}
+              disabled={role !== "ADMIN" || remove.isPending}
               className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-              title="Delete lead"
+              title={role === 'ADMIN' ? "Delete lead" : "only Admins are allowed"}
             >
               <Trash2 size={15} />
             </button>
@@ -108,7 +110,12 @@ export default function LeadsTable({ data }: { data: LeadDetailsDto }) {
         </td>
       </tr>
 
-      <Modal isOpen={!!viewLead} onClose={() => setViewLead(null)} title="Lead Details" size="lg">
+      <Modal
+        isOpen={!!viewLead}
+        onClose={() => setViewLead(null)}
+        title="Lead Details"
+        size="lg"
+      >
         {viewLead && <LeadDetail id={viewLead} />}
       </Modal>
 

@@ -61,8 +61,10 @@ The front-end runs (by default) on `http://localhost:5173` and the API on the po
 
 Create a `.env` file in `server/` (a sample `.env` is included). Required keys:
 
-- `MONGODB_URI` — MongoDB connection string (e.g. `mongodb://localhost:27017/smart_lead_management`)
-- `CLIENT_URL` — Frontend origin (e.g. `http://localhost:5173`)
+- `MONGODB_URI` — MongoDB connection string.
+  - For local development use `mongodb://localhost:27017/smart_lead_management`.
+  - When running inside Docker Compose, the backend container should use `mongodb://mongo:27017/smart_lead_management`.
+- `CLIENT_URL` — Frontend origin (e.g. `http://localhost:5173` for local dev or `http://localhost:3000` for Docker Compose).
 - `PORT` — Server port (e.g. `5000`)
 - `JWT_SECRET` — Secret key for signing JWTs
 - `JWT_EXPIRES_IN` — Token expiration (e.g. `1d`)
